@@ -5,7 +5,29 @@ from dotenv import load_dotenv
 
 # Latest version - Updated for Streamlit Cloud deployment
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Try to get API key from Streamlit secrets first, then environment variables
+if hasattr(st, 'secrets') and st.secrets.get("OPENAI_API_KEY"):
+    api_key = st.secrets["OPENAI_API_KEY"]
+else:
+    api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    st.error("""
+    ⚠️ **OpenAI API Key Not Found!**
+
+    Please set your OpenAI API key using one of these methods:
+
+    1. **Streamlit Cloud Secrets:** Add to your app's secrets in the dashboard
+    2. **Environment Variable:** `export OPENAI_API_KEY="your_api_key"`
+    3. **Create a .env file** with: `OPENAI_API_KEY=your_api_key`
+
+    Get your API key from: https://platform.openai.com/account/api-keys
+    """)
+    st.stop()
+
+# Initialize OpenAI client
+client = openai.OpenAI(api_key=api_key)
 
 st.set_page_config(page_title="Boone Quote Assistant", page_icon="📄")
 st.title("Boone Quote Assistant")
@@ -48,11 +70,11 @@ if user_input:
     try:
         # Include system prompt in API call but not in display
         messages = [st.session_state.system_prompt] + st.session_state.conversation
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4",
             messages=messages
         )
-        assistant_reply = response["choices"][0]["message"]["content"]
+        assistant_reply = response.choices[0].message.content
         st.session_state.conversation.append({"role": "assistant", "content": assistant_reply})
     except Exception as e:
         assistant_reply = f"⚠️ An error occurred: {e}"
