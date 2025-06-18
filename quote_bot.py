@@ -95,7 +95,7 @@ def ask_openai(prompt, history=[], extra_context=""):
 
 # --- STREAMLIT UI ---
 
-st.title("📄 Boone Graphics Quote Assistant (Conversational AI)")
+st.title("📄 Boone Graphics Quote Assistant (Conversational AI) Version 14")
 st.write("Hi! I'll help you build your quote request. Let's chat about what you need printed.")
 
 # --- Start Over Button ---
