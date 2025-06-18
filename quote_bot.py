@@ -3,6 +3,7 @@ import openai
 import os
 from dotenv import load_dotenv
 
+# Latest version - Updated for Streamlit Cloud deployment
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
