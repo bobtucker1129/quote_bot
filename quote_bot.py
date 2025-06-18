@@ -69,14 +69,15 @@ if not st.session_state.conversation:
 
 user_input = st.chat_input("Tell me what you need printed!")
 if user_input:
-    # Check if we should show the fold image
+    # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
-    fold_keywords = ["fold", "folding", "folded", "tri-fold", "z-fold", "half-fold"]
-    unsure_keywords = ["don't know", "not sure", "unsure", "uncertain", "which", "what type", "show me"]
+    fold_keywords = ["fold", "folding", "folded", "tri-fold", "z-fold", "half-fold", "folded", "folds"]
+    unsure_keywords = ["don't know", "not sure", "unsure", "uncertain", "which", "what type", "show me", "help", "options", "types"]
     
+    # Show image if they mention folding OR if they seem unsure about anything related to folding
     should_show_fold_image = (
-        any(keyword in user_input_lower for keyword in fold_keywords) and
-        any(keyword in user_input_lower for keyword in unsure_keywords)
+        any(keyword in user_input_lower for keyword in fold_keywords) or
+        ("fold" in user_input_lower and any(keyword in user_input_lower for keyword in unsure_keywords))
     )
     
     if should_show_fold_image:
