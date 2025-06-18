@@ -81,7 +81,7 @@ if user_input:
     )
     
     if should_show_fold_image:
-        st.image("Types-of-Common-Folds.jpg", caption="Common Fold Types", use_column_width=True)
+        st.image("Types-of-Common-Folds.jpg", caption="Common Fold Types", use_container_width=True)
     
     st.session_state.conversation.append({"role": "user", "content": user_input})
     try:
