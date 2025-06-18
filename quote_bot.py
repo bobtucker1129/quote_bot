@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import smtplib
 from email.message import EmailMessage
 from datetime import datetime
+import re
 
 load_dotenv()
 
@@ -114,7 +115,7 @@ def extract_summary():
         for m in st.session_state.conversation if m['role'] != 'system'
     ])
 
-user_input = st.chat_input("Tell me what you need printed! v22 (added delivery options & mailing extras)")
+user_input = st.chat_input("Tell me what you need printed! v23 (improved email detection)")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
@@ -141,29 +142,57 @@ if user_input:
         assistant_reply = response.choices[0].message.content
         st.session_state.conversation.append({"role": "assistant", "content": assistant_reply})
 
-        if "thank you" in assistant_reply.lower() and "email" in assistant_reply.lower():
+        # Check if conversation is complete and we should send emails
+        email_triggers = [
+            "thank you" in assistant_reply.lower() and "email" in assistant_reply.lower(),
+            "summary" in assistant_reply.lower() and ("complete" in assistant_reply.lower() or "finished" in assistant_reply.lower()),
+            "contact you" in assistant_reply.lower() and "shortly" in assistant_reply.lower(),
+            "boone team" in assistant_reply.lower() and "contact" in assistant_reply.lower()
+        ]
+        
+        if any(email_triggers):
             summary = extract_summary()
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-            # Extract user email
-            user_email = next((m["content"] for m in st.session_state.conversation if "@" in m["content"] and m["role"] == "user"), None)
+            # Extract user email - improve the detection
+            user_email = None
+            for m in st.session_state.conversation:
+                if m["role"] == "user" and "@" in m["content"]:
+                    # Look for email patterns in the user's message
+                    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+                    emails = re.findall(email_pattern, m["content"])
+                    if emails:
+                        user_email = emails[0]
+                        break
+            
+            # Debug: Show what we found
+            st.info(f"🔍 Email detection: Found email: {user_email}")
+            
             if user_email:
                 thank_you_body = (
                     "Thank you for your quote request!\n\n"
                     "A Boone team member will contact you shortly.\n\n"
                     "Here's a summary of what you submitted:\n\n" + summary
                 )
-                send_email(
+                email_sent = send_email(
                     subject="Thank you for your Boone Graphics quote request",
                     body=thank_you_body,
                     to=user_email,
                     reply_to="state@boonegraphics.net, elemire@boonegraphics.net"
                 )
+                if email_sent:
+                    st.success(f"✅ Confirmation email sent to {user_email}")
+                else:
+                    st.error(f"❌ Failed to send confirmation email to {user_email}")
 
             internal_body = (
                 f"New quote request submitted at {timestamp}.\n\n" + summary
             )
-            send_email("TEST ONLY: New Quote Request from Boone Assistant", internal_body, INTERNAL_RECIPIENTS)
+            internal_sent = send_email("TEST ONLY: New Quote Request from Boone Assistant", internal_body, INTERNAL_RECIPIENTS)
+            if internal_sent:
+                st.success("✅ Internal notification sent to Boone team")
+            else:
+                st.error("❌ Failed to send internal notification")
 
     except Exception as e:
         assistant_reply = f"⚠️ An error occurred: {e}"
