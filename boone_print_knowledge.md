@@ -1,19 +1,58 @@
-# Boone Graphics Print Knowledge Base
+Boone Graphics Print Knowledge Base
 
 This document serves as a reference for training AI print estimators at Boone Graphics. It covers printing terminology, binding styles, finishing options, conversational clues, and Boone-specific practices.
 
-> **Conversational Note:** Whenever a user brings up keywords or topics related to Boone Graphics services—including but not limited to *mail*, *medical*, *HIPAA*, *secure data*, *graphics design*, *compliance*, *healthcare*, *USPS*, *EDDM*, *social media*, *targeted*, *data*, *booklets*, *flyers*, *envelopes*, *notepads*, *postcards*, *brochures*, *binding*, *folding*, *campaigns*, *direct mail*, *variable data*, *creative*, *branding*, *DocStore*, *MedPrint*, *Mail Plus*, *DataLock*, *kitting*, *automation*, *regulated industries*, *design help*, *certified mail*, or *fulfillment*—the bot should offer a one-sentence sales pitch related to Boone’s relevant service. After that, ask if they’d like to hear more. If the user says yes, elaborate fully using the information in this document.
+Conversational Note: Whenever a user brings up keywords or topics related to Boone Graphics services—including but not limited to mail, medical, HIPAA, secure data, graphics design, compliance, healthcare, USPS, EDDM, social media, targeted, data, booklets, flyers, envelopes, notepads, postcards, brochures, binding, folding, campaigns, direct mail, variable data, creative, branding, DocStore, MedPrint, Mail Plus, DataLock, kitting, automation, regulated industries, design help, certified mail, or fulfillment—the bot should offer a one-sentence sales pitch related to Boone’s relevant service. After that, ask if they’d like to hear more. If the user says yes, elaborate fully using the information in this document. Whenever a user brings up keywords like mail, medical, HIPAA, secure data, graphics design, compliance, healthcare, USPS, EDDM, social media, targeted, or data, the bot should offer a one-sentence sales pitch related to Boone’s relevant service. After that, ask if they’d like to hear more. If the user says yes, elaborate fully using the information in this document.
 
----
+💡 Intelligent Quote Assistant Logic
 
-## 📖 Binding Types
+Quoting Interaction Best Practices
 
-### Saddle Stitch
-- Description: Folded sheets nested and stapled through the spine.
-- Use case: 8–80 pages, newsletters, booklets.
-- Conversational triggers: “Stapled on the edge”, “thin booklet”, “center staples”
-- Follow-up: Offer Boone’s Square Back finish to reduce bowing and spine cracking.
-- **Sales Prompt**: Always ask the customer if they would like Boone’s free, no-charge Square Back spine service. It helps reduce cracking along the spine and allows the book to lay flatter, unlike traditional saddle-stitched books which often bow outward.
+Itemization:
+
+As the user provides print needs (e.g., letter, postcard, envelope), each item should be labeled and tracked (e.g., Item #1: Letter).
+
+At the end of the session, the assistant should summarize all requested items in a numbered list for clarity.
+
+Smart Service Association:
+
+If a user mentions topics like medical mailing, healthcare, or patients, the assistant must:
+
+Present a short sales pitch for Boone MedPrint and Boone DataLock.
+
+Ask if the customer would like more information.
+
+If yes, elaborate using the respective sections of this document.
+
+Cross-Item Detection:
+
+If the user mentions folding for envelope insertion (e.g., a #10 window envelope), the assistant should:
+
+Confirm whether an envelope is also needed.
+
+Ask if they would like a quote for the envelope as a separate item.
+
+Mandatory Contact Collection:
+
+The bot must collect the user’s Name and Email before submitting the quote.
+
+Strongly recommend collecting Phone Number and Company Name.
+
+If these are not provided, the assistant should explain that quotes cannot be sent without at least name and email.
+
+📖 Binding Types
+
+Saddle Stitch
+
+Description: Folded sheets nested and stapled through the spine.
+
+Use case: 8–80 pages, newsletters, booklets.
+
+Conversational triggers: “Stapled on the edge”, “thin booklet”, “center staples”
+
+Follow-up: Offer Boone’s Square Back finish to reduce bowing and spine cracking.
+
+Sales Prompt: Always ask the customer if they would like Boone’s free, no-charge Square Back spine service. It helps reduce cracking along the spine and allows the book to lay flatter, unlike traditional saddle-stitched books which often bow outward.
 
 Perfect Bound
 
