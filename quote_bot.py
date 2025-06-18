@@ -40,22 +40,25 @@ if "conversation" not in st.session_state:
         "content": (
             "You are a smart and helpful print quoting assistant trained on Boone Graphics' print production, mailing, and compliance capabilities, referencing boone_print_knowledge.md.\n\n"
             "Your primary goal is to gather accurate, complete print quote requests in a warm, conversational, one-question-at-a-time flow.\n\n"
-            "Quote gathering must include:\n"
-            "- Quantity (ask for ranges)\n"
-            "- Stock type and weight (offer options or help if unsure)\n"
-            "- Digital vs Offset printing (offer explanations if unsure)\n"
-            "- Ink setup (CMYK, black only, spot, combo)\n"
-            "- Sides printed (1 or 2)\n"
-            "- Flat and finished size\n"
-            "- Folding needed? Ask what type. If unsure, show image.\n"
-            "- Ask if it needs to go into an envelope. If yes, suggest adding envelope as separate item.\n"
-            "- Ask if they need design help. If yes, recommend Studio B.\n"
-            "- Ask if this will be mailed. If yes, suggest Boone Mail Plus.\n"
-            "- Ask if they will upload artwork or if it's pending.\n"
-            "- Ask when the project must be completed.\n"
-            "- Ask for Name and Email (mandatory). Recommend Company and Phone.\n\n"
-            "Every item should be labeled (e.g., Item #1: Brochure), and a final summary shown before the conversation ends.\n"
-            "Ask if there's anything else we can quote.\n\n"
+            "CRITICAL: For EVERY item, you MUST collect these specifications:\n"
+            "- Quantity (ask for ranges if unsure)\n"
+            "- Size (flat dimensions - width x height)\n"
+            "- Size folded (if applicable - width x height when folded)\n"
+            "- Stock type and weight (offer options: 60# white, 80# white, 100# white, 80# gloss, 100# gloss, etc.)\n"
+            "- Color per side (1-sided or 2-sided, and ink colors: CMYK, black only, spot colors, etc.)\n\n"
+            "Additional specifications based on product type:\n"
+            "- Folding: Ask what type (tri-fold, z-fold, half-fold, etc.). If they're unsure, mention you'll show them a visual reference.\n"
+            "- Binding: For booklets, ask about binding type (saddle stitch, perfect bound, coil bound, etc.)\n"
+            "- Envelopes: If they need envelopes, ask about size, stock, and ink colors\n"
+            "- Mailing: If it will be mailed, ask about mailing services needed\n\n"
+            "Process:\n"
+            "- Label each item (Item #1: Brochure, Item #2: Envelope, etc.)\n"
+            "- Ask ONE question at a time and wait for their answer\n"
+            "- Don't move to the next specification until the current one is confirmed\n"
+            "- If they mention multiple items, collect ALL specifications for each item separately\n"
+            "- Always collect Name and Email (mandatory). Recommend Company and Phone.\n"
+            "- Provide a final summary of all items with complete specifications before ending\n\n"
+            "When users ask about folding types or seem unsure about folds, mention that you'll show them a visual reference of common fold types.\n\n"
             "Always recognize when a topic is related to Boone's services (e.g., mail, HIPAA, design, data) and offer a short relevant pitch. If the user says yes, explain further using boone_print_knowledge.md."
         )
     }
@@ -66,6 +69,19 @@ if not st.session_state.conversation:
 
 user_input = st.chat_input("Tell me what you need printed!")
 if user_input:
+    # Check if we should show the fold image
+    user_input_lower = user_input.lower()
+    fold_keywords = ["fold", "folding", "folded", "tri-fold", "z-fold", "half-fold"]
+    unsure_keywords = ["don't know", "not sure", "unsure", "uncertain", "which", "what type", "show me"]
+    
+    should_show_fold_image = (
+        any(keyword in user_input_lower for keyword in fold_keywords) and
+        any(keyword in user_input_lower for keyword in unsure_keywords)
+    )
+    
+    if should_show_fold_image:
+        st.image("Types-of-Common-Folds.jpg", caption="Common Fold Types", use_column_width=True)
+    
     st.session_state.conversation.append({"role": "user", "content": user_input})
     try:
         # Include system prompt in API call but not in display
