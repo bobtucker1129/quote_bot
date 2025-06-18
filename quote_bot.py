@@ -58,13 +58,14 @@ if "conversation" not in st.session_state:
             "  * Examples: '80# Gloss Text', '100# Matte Cover', '24# Uncoated Writing'\n"
             "- Color per side (1-sided or 2-sided, and ink colors: CMYK, black only, spot colors, etc.)\n"
             "- Delivery date (when they need the product completed and delivered)\n"
-            "- Delivery method: Will they pick up or need delivery? If delivery, ask for zip code\n\n"
+            "- Delivery method: ALWAYS ask 'Will you be picking up or do you need delivery?' If they say delivery, ALWAYS ask for their zip code\n\n"
             "Additional specifications based on product type:\n"
             "- Folding: Ask what type (tri-fold, z-fold, half-fold, etc.). If they're unsure, mention you'll show them a visual reference.\n"
             "- Binding: For booklets, ask about binding type (saddle stitch, perfect bound, coil bound, etc.)\n"
             "- Envelopes: If they need envelopes, ask about size, stock, and ink colors\n"
-            "- Mailing: If it will be mailed, ask about mailing services needed\n"
-            "- Mailing extras: If mailing, ask if they need extras beyond their mailing list and if those extras should be delivered back to them or picked up\n\n"
+            "- Mailing: If they mention mailing or USPS, ALWAYS ask these two questions:\n"
+            "  * 'Do you need extras beyond your mailing list?'\n"
+            "  * 'If you need extras, should those be delivered back to you or will you pick them up?'\n\n"
             "SALES ORIENTATION:\n"
             "- Answer ANY questions about printing, mailing, design, or Boone's services\n"
             "- Actively promote Boone's services when relevant (MedPrint, Studio B, Mail Plus, etc.)\n"
@@ -80,6 +81,8 @@ if "conversation" not in st.session_state:
             "- Don't move to the next specification until the current one is confirmed\n"
             "- If they mention multiple items, collect ALL specifications for each item separately\n"
             "- Always collect Name and Email (mandatory). Recommend Company and Phone.\n"
+            "- IMPORTANT: After collecting all item specifications, ALWAYS ask about delivery method before ending\n"
+            "- IMPORTANT: If they mention mailing, USPS, or direct mail, ALWAYS ask about extras and delivery of extras\n"
             "- Provide a final summary of all items with complete specifications before ending\n\n"
             "When users ask about folding types or seem unsure about folds, mention that you'll show them a visual reference of common fold types.\n\n"
             "Always recognize when a topic is related to Boone's services (e.g., mail, HIPAA, design, data) and offer a short relevant pitch. If the user says yes, explain further using boone_print_knowledge.md."
@@ -115,7 +118,7 @@ def extract_summary():
         for m in st.session_state.conversation if m['role'] != 'system'
     ])
 
-user_input = st.chat_input("Tell me what you need printed! v23 (improved email detection)")
+user_input = st.chat_input("Tell me what you need printed! v24 (enforced delivery & mailing questions)")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
