@@ -67,7 +67,7 @@ if "conversation" not in st.session_state:
 if not st.session_state.conversation:
     st.write("👋 **Welcome!** I'm here to help you get a quote for your printing needs. What would you like to have printed today?")
 
-user_input = st.chat_input("Tell me what you need printed!")
+user_input = st.chat_input("Tell me what you need printed! v18")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
