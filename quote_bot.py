@@ -111,7 +111,7 @@ def extract_summary():
         for m in st.session_state.conversation if m['role'] != 'system'
     ])
 
-user_input = st.chat_input("Tell me what you need printed! v19")
+user_input = st.chat_input("Tell me what you need printed! v20 (added emails)")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
