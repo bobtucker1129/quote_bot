@@ -3,155 +3,56 @@ import openai
 import os
 from dotenv import load_dotenv
 
-# --- CONFIGURATION ---
-
 load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Try to get API key from Streamlit secrets first, then environment variables
-if hasattr(st, 'secrets') and st.secrets.get("OPENAI_API_KEY"):
-    api_key = st.secrets["OPENAI_API_KEY"]
-else:
-    api_key = os.getenv("OPENAI_API_KEY")
+st.set_page_config(page_title="Boone Quote Assistant", page_icon="📄")
+st.title("Boone Quote Assistant")
 
-if not api_key:
-    st.error("""
-    ⚠️ **OpenAI API Key Not Found!**
+if "conversation" not in st.session_state:
+    st.session_state.conversation = []
 
-    Please set your OpenAI API key using one of these methods:
+# Enhanced system prompt
+st.session_state.conversation.append({
+    "role": "system",
+    "content": (
+        "You are a smart and helpful print quoting assistant trained on Boone Graphics' print production, mailing, and compliance capabilities, referencing boone_print_knowledge.md.\n\n"
+        "Your primary goal is to gather accurate, complete print quote requests in a warm, conversational, one-question-at-a-time flow.\n\n"
+        "Quote gathering must include:\n"
+        "- Quantity (ask for ranges)\n"
+        "- Stock type and weight (offer options or help if unsure)\n"
+        "- Digital vs Offset printing (offer explanations if unsure)\n"
+        "- Ink setup (CMYK, black only, spot, combo)\n"
+        "- Sides printed (1 or 2)\n"
+        "- Flat and finished size\n"
+        "- Folding needed? Ask what type. If unsure, show image.\n"
+        "- Ask if it needs to go into an envelope. If yes, suggest adding envelope as separate item.\n"
+        "- Ask if they need design help. If yes, recommend Studio B.\n"
+        "- Ask if this will be mailed. If yes, suggest Boone Mail Plus.\n"
+        "- Ask if they will upload artwork or if it's pending.\n"
+        "- Ask when the project must be completed.\n"
+        "- Ask for Name and Email (mandatory). Recommend Company and Phone.\n\n"
+        "Every item should be labeled (e.g., Item #1: Brochure), and a final summary shown before the conversation ends.\n"
+        "Ask if there's anything else we can quote.\n\n"
+        "Always recognize when a topic is related to Boone's services (e.g., mail, HIPAA, design, data) and offer a short relevant pitch. If the user says yes, explain further using boone_print_knowledge.md."
+    )
+})
 
-    1. **Streamlit Cloud Secrets:** Add to your app's secrets in the dashboard
-    2. **Environment Variable:** `export OPENAI_API_KEY="your_api_key"`
-    3. **Create a .env file** with: `OPENAI_API_KEY=your_api_key`
-
-    Get your API key from: https://platform.openai.com/account/api-keys
-    """)
-    st.stop()
-
-# Initialize OpenAI client
-client = openai.OpenAI(api_key=api_key)
-
-# --- LOAD KNOWLEDGE BASE ---
-
-def load_knowledge_sections():
-    try:
-        with open("boone_print_knowledge.md", "r") as f:
-            content = f.read()
-        
-        sections = {}
-        current_section = None
-        for line in content.splitlines():
-            if line.startswith("## "):
-                current_section = line.replace("## ", "").strip()
-                sections[current_section] = ""
-            elif current_section:
-                sections[current_section] += line + "\n"
-        return sections
-    except FileNotFoundError:
-        st.warning("Knowledge base file not found. Some features may be limited.")
-        return {}
-
-knowledge_sections = load_knowledge_sections()
-
-# --- EXTRACT RELEVANT SNIPPETS ---
-
-def get_relevant_knowledge(user_input):
-    keywords = {
-        "binding": ["booklet", "saddle stitch", "perfect bound", "coil bound", "binding"],
-        "mailing": ["mail", "ncoa", "cass", "usps", "postage"],
-        "paper": ["paper", "stock", "gloss", "matte", "silk", "uncoated"],
-        "studio b": ["design", "studio", "artwork"],
-        "boone mail plus": ["campaign", "tracking", "omni", "ads", "retargeting"],
-        "fold": ["fold", "tri-fold", "z-fold", "brochure"]
-    }
-    
-    context = ""
-    for section, terms in keywords.items():
-        if any(term in user_input.lower() for term in terms):
-            for key in knowledge_sections:
-                if section.lower() in key.lower():
-                    context += f"\n\n### From Boone Knowledge Base: {key}\n" + knowledge_sections[key][:1000]  # Clip to avoid long input
-    return context
-
-# --- SESSION STATE SETUP ---
-
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-if "quote_data" not in st.session_state:
-    st.session_state.quote_data = {}
-
-# --- FUNCTIONS ---
-
-def ask_openai(prompt, history=[], extra_context=""):
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are a print and mail quoting assistant trained on Boone Graphics' internal knowledge base (boone_print_knowledge.md). "
-                "As users request quotes, follow these intelligent interaction rules:\n\n"
-                "- Identify and label each print item (e.g., Item #1: Letter) and summarize them at the end.\n"
-                "- If users mention medical mail, healthcare, or patients, respond with a short sales pitch for Boone MedPrint and Boone DataLock. Ask if they want to hear more and elaborate if they do.\n"
-                "- If folding and envelope insertion are discussed, ask if they also need an envelope quoted.\n"
-                "- Always collect Name and Email before proceeding. Strongly recommend Company and Phone. Explain that quotes require at least Name and Email.\n"
-                "- For all services (mail, variable data, MedPrint, Studio B, etc.), reference the boone_print_knowledge.md to explain services if the user is interested.\n"
-                "Maintain a helpful and professional tone throughout."
-            )
-        }
-    ]
-    
-    for pair in history:
-        messages.append({"role": "user", "content": pair['user']})
-        messages.append({"role": "assistant", "content": pair['assistant']})
-    
-    prompt_with_context = extra_context + "\n\n" + prompt
-    messages.append({"role": "user", "content": prompt_with_context})
-    
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=0.7
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"⚠️ An error occurred while contacting OpenAI: {e}"
-
-# --- STREAMLIT UI ---
-
-st.title("📄 Boone Graphics Quote Assistant (Conversational AI) Version 14")
-st.write("Hi! I'll help you build your quote request. Let's chat about what you need printed.")
-
-# --- Start Over Button ---
-
-if st.button("🔄 Start Over"):
-    st.session_state.chat_history = []
-    st.session_state.quote_data = {}
-    st.experimental_rerun()
-
-# --- Chat Input ---
-
-user_input = st.chat_input("Type your message here...")
-
-# --- Optional Visual Trigger ---
-
+user_input = st.chat_input("Tell me what you need printed!")
 if user_input:
-    if "fold" in user_input.lower() and ("don't know" in user_input.lower() or "not sure" in user_input.lower()):
-        st.image("Types-of-Common-Folds.jpg", caption="Common Fold Styles", use_column_width=True)
-    
-    st.chat_message("user").write(user_input)
-    
-    extra_context = get_relevant_knowledge(user_input)
-    
-    with st.spinner("Thinking..."):
-        response = ask_openai(user_input, st.session_state.chat_history, extra_context)
-    
-    st.session_state.chat_history.append({"user": user_input, "assistant": response})
-    st.chat_message("assistant").write(response)
+    st.session_state.conversation.append({"role": "user", "content": user_input})
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=st.session_state.conversation
+        )
+        assistant_reply = response["choices"][0]["message"]["content"]
+        st.session_state.conversation.append({"role": "assistant", "content": assistant_reply})
+    except Exception as e:
+        assistant_reply = f"⚠️ An error occurred: {e}"
+        st.session_state.conversation.append({"role": "assistant", "content": assistant_reply})
 
-# --- Display Chat History ---
+for message in st.session_state.conversation:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-if st.session_state.chat_history:
-    st.markdown("---")
-    st.subheader("📜 Conversation History")
-    for pair in st.session_state.chat_history:
-        st.markdown(f"**You:** {pair['user']}")
-        st.markdown(f"**Bot:** {pair['assistant']}")
