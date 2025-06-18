@@ -6,7 +6,29 @@ from dotenv import load_dotenv
 # --- CONFIGURATION ---
 
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Try to get API key from Streamlit secrets first, then environment variables
+if hasattr(st, 'secrets') and st.secrets.get("OPENAI_API_KEY"):
+    api_key = st.secrets["OPENAI_API_KEY"]
+else:
+    api_key = os.getenv("OPENAI_API_KEY")
+
+if not api_key:
+    st.error("""
+    ⚠️ **OpenAI API Key Not Found!**
+
+    Please set your OpenAI API key using one of these methods:
+
+    1. **Streamlit Cloud Secrets:** Add to your app's secrets in the dashboard
+    2. **Environment Variable:** `export OPENAI_API_KEY="your_api_key"`
+    3. **Create a .env file** with: `OPENAI_API_KEY=your_api_key`
+
+    Get your API key from: https://platform.openai.com/account/api-keys
+    """)
+    st.stop()
+
+# Initialize OpenAI client
+client = openai.OpenAI(api_key=api_key)
 
 # --- LOAD KNOWLEDGE BASE ---
 
@@ -62,18 +84,18 @@ if "quote_data" not in st.session_state:
 def ask_openai(prompt, history=[], extra_context=""):
     messages = [
         {
-  "role": "system",
-  "content": (
-    "You are a print and mail quoting assistant trained on Boone Graphics' internal knowledge base (boone_print_knowledge.md). "
-    "As users request quotes, follow these intelligent interaction rules:\n\n"
-    "- Identify and label each print item (e.g., Item #1: Letter) and summarize them at the end.\n"
-    "- If users mention medical mail, healthcare, or patients, respond with a short sales pitch for Boone MedPrint and Boone DataLock. Ask if they want to hear more and elaborate if they do.\n"
-    "- If folding and envelope insertion are discussed, ask if they also need an envelope quoted.\n"
-    "- Always collect Name and Email before proceeding. Strongly recommend Company and Phone. Explain that quotes require at least Name and Email.\n"
-    "- For all services (mail, variable data, MedPrint, Studio B, etc.), reference the boone_print_knowledge.md to explain services if the user is interested.\n"
-    "Maintain a helpful and professional tone throughout."
-  )
-}
+            "role": "system",
+            "content": (
+                "You are a print and mail quoting assistant trained on Boone Graphics' internal knowledge base (boone_print_knowledge.md). "
+                "As users request quotes, follow these intelligent interaction rules:\n\n"
+                "- Identify and label each print item (e.g., Item #1: Letter) and summarize them at the end.\n"
+                "- If users mention medical mail, healthcare, or patients, respond with a short sales pitch for Boone MedPrint and Boone DataLock. Ask if they want to hear more and elaborate if they do.\n"
+                "- If folding and envelope insertion are discussed, ask if they also need an envelope quoted.\n"
+                "- Always collect Name and Email before proceeding. Strongly recommend Company and Phone. Explain that quotes require at least Name and Email.\n"
+                "- For all services (mail, variable data, MedPrint, Studio B, etc.), reference the boone_print_knowledge.md to explain services if the user is interested.\n"
+                "Maintain a helpful and professional tone throughout."
+            )
+        }
     ]
     
     for pair in history:
@@ -84,7 +106,7 @@ def ask_openai(prompt, history=[], extra_context=""):
     messages.append({"role": "user", "content": prompt_with_context})
     
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
             temperature=0.7
