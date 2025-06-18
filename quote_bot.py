@@ -56,12 +56,14 @@ if "conversation" not in st.session_state:
             "  * Finish examples: Gloss, Matte, Satin, Uncoated, Linen, Laid\n"
             "  * Examples: '80# Gloss Text', '100# Matte Cover', '24# Uncoated Writing'\n"
             "- Color per side (1-sided or 2-sided, and ink colors: CMYK, black only, spot colors, etc.)\n"
-            "- Delivery date (when they need the product completed and delivered)\n\n"
+            "- Delivery date (when they need the product completed and delivered)\n"
+            "- Delivery method: Will they pick up or need delivery? If delivery, ask for zip code\n\n"
             "Additional specifications based on product type:\n"
             "- Folding: Ask what type (tri-fold, z-fold, half-fold, etc.). If they're unsure, mention you'll show them a visual reference.\n"
             "- Binding: For booklets, ask about binding type (saddle stitch, perfect bound, coil bound, etc.)\n"
             "- Envelopes: If they need envelopes, ask about size, stock, and ink colors\n"
-            "- Mailing: If it will be mailed, ask about mailing services needed\n\n"
+            "- Mailing: If it will be mailed, ask about mailing services needed\n"
+            "- Mailing extras: If mailing, ask if they need extras beyond their mailing list and if those extras should be delivered back to them or picked up\n\n"
             "SALES ORIENTATION:\n"
             "- Answer ANY questions about printing, mailing, design, or Boone's services\n"
             "- Actively promote Boone's services when relevant (MedPrint, Studio B, Mail Plus, etc.)\n"
@@ -112,7 +114,7 @@ def extract_summary():
         for m in st.session_state.conversation if m['role'] != 'system'
     ])
 
-user_input = st.chat_input("Tell me what you need printed! v21 (added delivery date)")
+user_input = st.chat_input("Tell me what you need printed! v22 (added delivery options & mailing extras)")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
