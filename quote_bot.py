@@ -2,8 +2,10 @@ import streamlit as st
 import openai
 import os
 from dotenv import load_dotenv
+import smtplib
+from email.message import EmailMessage
+from datetime import datetime
 
-# Latest version - Updated for Streamlit Cloud deployment
 load_dotenv()
 
 # Try to get API key from Streamlit secrets first, then environment variables
@@ -28,6 +30,10 @@ if not api_key:
 
 # Initialize OpenAI client
 client = openai.OpenAI(api_key=api_key)
+
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+INTERNAL_RECIPIENTS = ["state@boonegraphics.net", "elemire@boonegraphics.net"]
 
 st.set_page_config(page_title="Boone Quote Assistant", page_icon="📄")
 st.title("Boone Quote Assistant")
@@ -80,6 +86,31 @@ if "conversation" not in st.session_state:
 if not st.session_state.conversation:
     st.write("👋 **Welcome!** I'm here to help you get a quote for your printing needs. What would you like to have printed today?")
 
+# Helper functions for sending emails
+def send_email(subject, body, to, reply_to=None):
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = EMAIL_ADDRESS
+        msg["To"] = to if isinstance(to, str) else ", ".join(to)
+        if reply_to:
+            msg["Reply-To"] = reply_to
+        msg.set_content(body)
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            smtp.send_message(msg)
+        return True
+    except Exception as e:
+        st.error(f"❌ Email error: {e}")
+        return False
+
+def extract_summary():
+    return "\n\n".join([
+        f"{m['role'].capitalize()}: {m['content']}"
+        for m in st.session_state.conversation if m['role'] != 'system'
+    ])
+
 user_input = st.chat_input("Tell me what you need printed! v19")
 if user_input:
     # Check if we should show the fold image - make it more flexible
@@ -106,6 +137,31 @@ if user_input:
         )
         assistant_reply = response.choices[0].message.content
         st.session_state.conversation.append({"role": "assistant", "content": assistant_reply})
+
+        if "thank you" in assistant_reply.lower() and "email" in assistant_reply.lower():
+            summary = extract_summary()
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+            # Extract user email
+            user_email = next((m["content"] for m in st.session_state.conversation if "@" in m["content"] and m["role"] == "user"), None)
+            if user_email:
+                thank_you_body = (
+                    "Thank you for your quote request!\n\n"
+                    "A Boone team member will contact you shortly.\n\n"
+                    "Here's a summary of what you submitted:\n\n" + summary
+                )
+                send_email(
+                    subject="Thank you for your Boone Graphics quote request",
+                    body=thank_you_body,
+                    to=user_email,
+                    reply_to="state@boonegraphics.net, elemire@boonegraphics.net"
+                )
+
+            internal_body = (
+                f"New quote request submitted at {timestamp}.\n\n" + summary
+            )
+            send_email("TEST ONLY: New Quote Request from Boone Assistant", internal_body, INTERNAL_RECIPIENTS)
+
     except Exception as e:
         assistant_reply = f"⚠️ An error occurred: {e}"
         st.session_state.conversation.append({"role": "assistant", "content": assistant_reply})
