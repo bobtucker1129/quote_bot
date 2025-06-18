@@ -65,7 +65,21 @@ if "conversation" not in st.session_state:
             "- Envelopes: If they need envelopes, ask about size, stock, and ink colors\n"
             "- Mailing: If they mention mailing or USPS, ALWAYS ask these two questions:\n"
             "  * 'Do you need extras beyond your mailing list?'\n"
-            "  * 'If you need extras, should those be delivered back to you or will you pick them up?'\n\n"
+            "  * 'If you need extras, should those be delivered back to you or will you pick them up?'\n"
+            "- Posters/Signage: If they ask for posters or signage, ask if they want flexible or rigid:\n"
+            "  * Flexible: Recommend '14mil Double White Popup'\n"
+            "  * Rigid: Offer these 5 options:\n"
+            "    - PVC Board - Durable for indoor and short term outdoor use\n"
+            "    - Styrene - Semi-rigid, flexible, and curveable\n"
+            "    - Foam Board - Lightweight poster board, for indoor use only\n"
+            "    - GatorFoam - Extra heavy-duty surface, Lightweight, indoor use only - Comes in these thicknesses 3/16\" White, 1/2\" White, 3/16\" Black, 1/2\" Black\n"
+            "    - Coroplast - 4mm coroplast with H-Stake option, Custom size, indoor/outdoor use\n"
+            "- Banners: If they ask for banners, offer these options:\n"
+            "  * 13 oz Matte Scrim Banner - Full color UV printed - Indoor and outdoor ready, Single or double sided\n"
+            "  * 18 oz matte blockout banner - Full color UV printed - Indoor and outdoor ready, Single or double sided\n"
+            "  * For ALL banners, ask if they want: Hemming the edges, Pole Pockets, Grommets\n"
+            "  * If grommets, ask which option: Every 2' All Sides, Every 2' Top & Bottom, Every 2' Left & Right, 4 Corner Only\n"
+            "- Other products: If they ask for anything outside these options, note their request so our estimator can see if we can do that\n\n"
             "SALES ORIENTATION:\n"
             "- Answer ANY questions about printing, mailing, design, or Boone's services\n"
             "- Actively promote Boone's services when relevant (MedPrint, Studio B, Mail Plus, etc.)\n"
@@ -118,7 +132,7 @@ def extract_summary():
         for m in st.session_state.conversation if m['role'] != 'system'
     ])
 
-user_input = st.chat_input("Tell me what you need printed! v24 (enforced delivery & mailing questions)")
+user_input = st.chat_input("Tell me what you need printed! v25 (added posters, signage & banner options)")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
