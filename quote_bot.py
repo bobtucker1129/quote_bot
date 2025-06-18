@@ -55,7 +55,8 @@ if "conversation" not in st.session_state:
             "  * Type examples: Text, Cover, Writing\n"
             "  * Finish examples: Gloss, Matte, Satin, Uncoated, Linen, Laid\n"
             "  * Examples: '80# Gloss Text', '100# Matte Cover', '24# Uncoated Writing'\n"
-            "- Color per side (1-sided or 2-sided, and ink colors: CMYK, black only, spot colors, etc.)\n\n"
+            "- Color per side (1-sided or 2-sided, and ink colors: CMYK, black only, spot colors, etc.)\n"
+            "- Delivery date (when they need the product completed and delivered)\n\n"
             "Additional specifications based on product type:\n"
             "- Folding: Ask what type (tri-fold, z-fold, half-fold, etc.). If they're unsure, mention you'll show them a visual reference.\n"
             "- Binding: For booklets, ask about binding type (saddle stitch, perfect bound, coil bound, etc.)\n"
@@ -111,7 +112,7 @@ def extract_summary():
         for m in st.session_state.conversation if m['role'] != 'system'
     ])
 
-user_input = st.chat_input("Tell me what you need printed! v20 (added emails)")
+user_input = st.chat_input("Tell me what you need printed! v21 (added delivery date)")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
