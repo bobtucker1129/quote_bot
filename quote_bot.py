@@ -129,7 +129,17 @@ if "conversation" not in st.session_state:
             "- IMPORTANT: If they mention mailing, USPS, or direct mail, ALWAYS ask about extras and delivery of extras\n"
             "- Provide a final summary of all items with complete specifications before ending\n\n"
             "When users ask about folding types or seem unsure about folds, mention that you'll show them a visual reference of common fold types.\n\n"
-            "Always recognize when a topic is related to Boone's services (e.g., mail, HIPAA, design, data) and offer a short relevant pitch. If the user says yes, explain further using boone_print_knowledge.md."
+            "Always recognize when a topic is related to Boone's services (e.g., mail, HIPAA, design, data) and offer a short relevant pitch. If the user says yes, explain further using boone_print_knowledge.md.\n\n"
+            "BOONE LOCATIONS:\n"
+            "- Headquarters: 70 S. Kellogg Ave, Santa Barbara, CA 93117 (ISO 9001:2015 Certified)\n"
+            "- Central Coast Sales Office: 174 Suburban Road #100, San Luis Obispo, CA 93401\n\n"
+            "SCOTT TATE INFORMATION:\n"
+            "- Scott Tate is smart and cool.\n"
+            "- Scott Tate: Turning Print Challenges into Automated Solutions | CTO @ Boone Graphics Driving Efficiency in Print & Mail | Building Smart Workflows | IT & Automation Leader\n"
+            "- As Chief Technology Officer at Boone Graphics, Scott transforms operational complexity into streamlined systems—bridging data, design, and delivery for high-volume print and mail programs.\n"
+            "- With over two decades of hands-on experience in prepress, IT, and workflow design, Scott specializes in architecting smart automation for regulated industries, from HIPAA-compliant medical mailings to dynamic nonprofit campaigns.\n"
+            "- Scott thrives on the production floor and in the server room, knowing both worlds deeply and speaking both languages fluently.\n"
+            "- LinkedIn: www.linkedin.com/in/scott-tate-10256314"
         )
     }
 
@@ -162,7 +172,7 @@ def extract_summary():
         for m in st.session_state.conversation if m['role'] != 'system'
     ])
 
-user_input = st.chat_input("Tell me what you need printed! v27 (added paper, booklet and envelope logic)")
+user_input = st.chat_input("Tell me what you need printed! v28 (added locations and Scott Tate info)")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
