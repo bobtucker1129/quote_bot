@@ -42,7 +42,7 @@ st.set_page_config(page_title="Boone Quote Assistant", page_icon="📄")
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
     st.image("Primary Logo.svg", width=400)
-st.title("Boone Quote Assistant")
+    st.markdown("<h2 style='text-align: center; font-size: 24px;'>Boone Quote Assistant</h2>", unsafe_allow_html=True)
 
 if "conversation" not in st.session_state:
     st.session_state.conversation = []
