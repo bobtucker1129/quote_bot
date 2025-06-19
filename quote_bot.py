@@ -37,6 +37,11 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
 INTERNAL_RECIPIENTS = ["state@boonegraphics.net", "elemire@boonegraphics.net"]
 
 st.set_page_config(page_title="Boone Quote Assistant", page_icon="📄")
+
+# Add logo and title
+col1, col2, col3 = st.columns([1,2,1])
+with col2:
+    st.image("Primary Logo.svg", width=400)
 st.title("Boone Quote Assistant")
 
 if "conversation" not in st.session_state:
@@ -172,7 +177,7 @@ def extract_summary():
         for m in st.session_state.conversation if m['role'] != 'system'
     ])
 
-user_input = st.chat_input("Tell me what you need printed! v28 (added locations and Scott Tate info)")
+user_input = st.chat_input("Tell me what you need printed! v29 (added logos and chatbot avatar)")
 if user_input:
     # Check if we should show the fold image - make it more flexible
     user_input_lower = user_input.lower()
