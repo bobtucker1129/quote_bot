@@ -257,6 +257,10 @@ if user_input:
 
 # Display conversation history (excluding system prompt)
 for message in st.session_state.conversation:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    if message["role"] == "assistant":
+        with st.chat_message(message["role"], avatar="Primary Logomark.svg"):
+            st.markdown(message["content"])
+    else:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
