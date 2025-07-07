@@ -32,8 +32,19 @@ if not api_key:
 # Initialize OpenAI client
 client = openai.OpenAI(api_key=api_key)
 
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+# Try to get email credentials from Streamlit secrets first, then environment variables
+if hasattr(st, 'secrets') and st.secrets.get("EMAIL_ADDRESS"):
+    EMAIL_ADDRESS = st.secrets["EMAIL_ADDRESS"]
+    EMAIL_PASSWORD = st.secrets["EMAIL_PASSWORD"]
+else:
+    EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+    EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+
+# Check if email credentials are available
+EMAIL_ENABLED = bool(EMAIL_ADDRESS and EMAIL_PASSWORD)
+if not EMAIL_ENABLED:
+    st.warning("⚠️ Email notifications are disabled. Please configure EMAIL_ADDRESS and EMAIL_PASSWORD in secrets.")
+
 INTERNAL_RECIPIENTS = ["state@boonegraphics.net", "elemire@boonegraphics.net"]
 
 st.set_page_config(page_title="Boone Quote Assistant", page_icon="📄")
@@ -191,7 +202,7 @@ if user_input:
     )
     
     if should_show_fold_image:
-        st.image("Types-of-Common-Folds.jpg", caption="Common Fold Types", use_container_width=True)
+        st.image("Types-of-Common-Folds.jpg", caption="Common Fold Types", width=600)
     
     st.session_state.conversation.append({"role": "user", "content": user_input})
     try:
@@ -230,7 +241,7 @@ if user_input:
             # Debug: Show what we found
             st.info(f"🔍 Email detection: Found email: {user_email}")
             
-            if user_email:
+            if user_email and EMAIL_ENABLED:
                 thank_you_body = (
                     "Thank you for your quote request!\n\n"
                     "A Boone team member will contact you shortly.\n\n"
@@ -246,15 +257,20 @@ if user_input:
                     st.success(f"✅ Confirmation email sent to {user_email}")
                 else:
                     st.error(f"❌ Failed to send confirmation email to {user_email}")
+            elif user_email and not EMAIL_ENABLED:
+                st.info(f"📧 Email notifications are disabled. Quote summary would be sent to {user_email}")
 
-            internal_body = (
-                f"New quote request submitted at {timestamp}.\n\n" + summary
-            )
-            internal_sent = send_email("TEST ONLY: New Quote Request from Boone Assistant", internal_body, INTERNAL_RECIPIENTS)
-            if internal_sent:
-                st.success("✅ Internal notification sent to Boone team")
+            if EMAIL_ENABLED:
+                internal_body = (
+                    f"New quote request submitted at {timestamp}.\n\n" + summary
+                )
+                internal_sent = send_email("TEST ONLY: New Quote Request from Boone Assistant", internal_body, INTERNAL_RECIPIENTS)
+                if internal_sent:
+                    st.success("✅ Internal notification sent to Boone team")
+                else:
+                    st.error("❌ Failed to send internal notification")
             else:
-                st.error("❌ Failed to send internal notification")
+                st.info("📧 Internal email notifications are disabled.")
 
     except Exception as e:
         assistant_reply = f"⚠️ An error occurred: {e}"
